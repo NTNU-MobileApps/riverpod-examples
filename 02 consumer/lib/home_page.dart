@@ -1,4 +1,4 @@
-import 'package:counter/counter_provider.dart';
+import 'package:counter_consumer/counter_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,20 +7,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// to have an overview (with debug prints) on what is rebuilt when
 ///
 /// The widget is rebuilt every time when `counterProvider` gets a new value.
-class HomePage extends ConsumerWidget {
+class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
   /// The builder method. Note that we need the `WidgetRef ref` here -
   /// ConsumerWidget provides this reference to the provider scope
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     print("build the HomePage widget");
     return Scaffold(
       appBar: _buildAppBar(),
       body: Center(
-        child: _buildColumn(context, ref),
+        child: _buildColumn(context),
       ),
-      floatingActionButton: _buildButton(ref),
+      floatingActionButton: _buildButton(context),
     );
   }
 
@@ -33,30 +33,32 @@ class HomePage extends ConsumerWidget {
     print("\nCounter = ${ref.read(counterProvider.notifier).state}");
   }
 
-  FloatingActionButton _buildButton(WidgetRef ref) {
+  Widget _buildButton(BuildContext context) {
     print("  Build Button");
-    return FloatingActionButton(
-      // Note - we must pass the WidgetRef to the _incrementCounter method!
-      onPressed: () => _incrementCounter(ref),
-      tooltip: 'Increment',
-      child: const Icon(Icons.add),
-    );
+    return Consumer(builder: (context, ref, child) {
+      return FloatingActionButton(
+        // Note - we must pass the WidgetRef to the _incrementCounter method!
+        onPressed: () => _incrementCounter(ref),
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
+      );
+    });
   }
 
   AppBar _buildAppBar() {
     print("  Build AppBar");
     return AppBar(
-      title: const Text("Counter with Riverpod"),
+      title: const Text("Riverpod Consumer demo"),
     );
   }
 
-  Column _buildColumn(BuildContext context, WidgetRef ref) {
+  Column _buildColumn(BuildContext context) {
     print("  Build Column");
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         _buildStaticText(),
-        _buildCounterText(context, ref),
+        _buildCounterText(context),
       ],
     );
   }
@@ -66,13 +68,19 @@ class HomePage extends ConsumerWidget {
     return const Text('You have pushed the button this many times:');
   }
 
-  Widget _buildCounterText(BuildContext context, WidgetRef ref) {
-    // Get the counter value and "watch for value updates"
-    final counter = ref.watch(counterProvider);
-    print("    Build counter text");
-    return Text(
-      '$counter',
-      style: Theme.of(context).textTheme.headline4,
+  // Build the text showing counter value. Here we need to get access to the
+  // counterProvider, therefore we use the Consumer widget to get
+  // access to the "Riverpod infrastructure"
+  Widget _buildCounterText(BuildContext context) {
+    return Consumer(
+      builder: (context, ref, child) {
+        final counter = ref.watch(counterProvider);
+        print("    Build counter text");
+        return Text(
+          '$counter',
+          style: Theme.of(context).textTheme.headline4,
+        );
+      },
     );
   }
 }
