@@ -78,7 +78,7 @@ class HomePage extends StatelessWidget {
         print("    Build counter text");
         return Text(
           '$counter',
-          style: Theme.of(context).textTheme.headline4,
+          style: Theme.of(context).textTheme.headlineMedium,
         );
       },
     );
